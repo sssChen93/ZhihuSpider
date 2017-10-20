@@ -6,9 +6,11 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from scrapy import Request
 
+import requests
 
-class ZhihuspiderSpiderMiddleware(object):
+class ZhihuSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -54,3 +56,24 @@ class ZhihuspiderSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+# https://github.com/jhao104/proxy_poo
+def get_proxy():
+    return requests.get("http://127.0.0.1:5010/get/").text
+
+def delete_proxy(proxy):
+    requests.get("http://127.0.0.1:5010/delete/?proxy={}".format(proxy))
+
+
+class AddHeaderMiddleware(object):
+
+    def process_request(self, request, spider):
+        request.headers.setdefault(b'authorization', b"oauth c3cef7c66a1843f8b3a9e6a1e3160e20")
+        request.headers.setdefault(b'User-Agent', "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36")
+        request.meta['proxy'] = "https://" + get_proxy()
+        # request.meta['proxy'] = "https://116.196.86.233:8888"
+        pass
+
+    def process_response(self, request, response, spider):
+        return response
